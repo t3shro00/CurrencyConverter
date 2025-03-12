@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
             CurrencyConverterTheme {
                 PairConversionScreen(
                     viewModel = PairConversionViewModel(),
-                    modifier = Modifier.fillMaxSize().padding(16.dp)
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }

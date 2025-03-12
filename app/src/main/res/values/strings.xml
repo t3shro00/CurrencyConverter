@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Currency Converter</string>
+    <string name="apiKey">faf6de3ca4c4325c108f756f</string>
+    <string name="convertButton">Convert</string>
+    <string name="exchangeRateFluctuationInfo">Exchange rates fluctuate in real-time. Be sure to verify the current rate in the app before making any exchanges.</string>
+    <string name="base_currency">Base Currency</string>
+    <string name="target_currency">Target Currency</string>
+</resources>
