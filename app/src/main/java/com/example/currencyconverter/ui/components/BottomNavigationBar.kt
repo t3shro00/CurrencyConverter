@@ -52,39 +52,3 @@ fun BottomNavigationBar(
     }
 }
 
-
-//@Composable
-//fun BottomNavigationBar(navController: NavController) {
-//    val items = listOf(
-//        BottomNavItem.PairConversion,
-//        BottomNavItem.ExchangeRates
-//    )
-//
-//    BottomNavigation(
-//        backgroundColor = MaterialTheme.colorScheme.surface,
-//        contentColor = MaterialTheme.colorScheme.onSurface,
-//        elevation = 8.dp
-//    ) {
-//        val navBackStackEntry by navController.currentBackStackEntryAsState()
-//        val currentDestination = navBackStackEntry?.destination
-//
-//        items.forEach { item ->
-//            BottomNavigationItem(
-//                icon = { Icon(painter = painterResource(id = item.icon), contentDescription = item.label) },
-//                label = { Text(item.label) },
-//                selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
-//                onClick = {
-//                    navController.navigate(item.route) {
-//                        popUpTo(navController.graph.findStartDestination().id) {
-//                            saveState = true
-//                        }
-//                        launchSingleTop = true
-//                        restoreState = true
-//                    }
-//                },
-//                selectedContentColor = MaterialTheme.colorScheme.primary,
-//                unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-//            )
-//        }
-//    }
-//}

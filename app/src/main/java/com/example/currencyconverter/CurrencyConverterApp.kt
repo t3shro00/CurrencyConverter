@@ -1,6 +1,8 @@
-// CurrencyConverterApp.kt
+
 package com.example.currencyconverter
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -10,9 +12,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -31,6 +35,7 @@ fun CurrencyConverterApp() {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
+
     val title = when (currentRoute) {
         BottomNavItem.PairConversion.route -> BottomNavItem.PairConversion.label
         BottomNavItem.ExchangeRates.route -> BottomNavItem.ExchangeRates.label
@@ -41,14 +46,19 @@ fun CurrencyConverterApp() {
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.headlineLarge.copy(
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -82,3 +92,4 @@ fun CurrencyConverterApp() {
         }
     )
 }
+
