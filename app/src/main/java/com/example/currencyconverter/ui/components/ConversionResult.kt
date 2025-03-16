@@ -12,8 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.currencyconverter.R
 
 @Composable
 fun ConversionResult(
@@ -41,24 +43,31 @@ fun ConversionResult(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                .background(
+                    MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
+                    RoundedCornerShape(12.dp)
+                )
                 .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Converted Amount",
+                text = stringResource(R.string.converted_amount),
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 modifier = Modifier.padding(vertical = 8.dp)
             )
             Text(
-                text = "$convertedAmount ${targetCurrency.uppercase()}",
+                text = stringResource(
+                    R.string.converted_amount_target_currency,
+                    convertedAmount,
+                    targetCurrency.uppercase()
+                ),
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
             Text(
-                text = "$baseCurrency → $targetCurrency",
+                text = stringResource(R.string.conversion, baseCurrency, targetCurrency),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 modifier = Modifier.padding(bottom = 16.dp)
