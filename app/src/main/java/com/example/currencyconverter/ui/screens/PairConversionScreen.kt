@@ -1,10 +1,8 @@
 package com.example.currencyconverter.ui.screens
 
 import ConversionResult
-import CurrencyInputField
-import android.util.Log
+
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,18 +10,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,188 +29,159 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.currencyconverter.R
 import com.example.currencyconverter.ui.components.CurrencyDropdown
-import com.example.currencyconverter.viewmodel.PairConversionViewModel
+import com.example.currencyconverter.ui.components.CurrencyInputField
+import com.example.currencyconverter.viewmodel.CurrencyConverterViewModel
+import com.example.currencyconverter.viewmodel.UiState
 
 @Composable
 fun PairConversionScreen(
-    viewModel: PairConversionViewModel,
+    viewModel: CurrencyConverterViewModel,
     modifier: Modifier = Modifier,
-    navController: NavController,
-    ) {
-    // Local state variables
+    navController: NavController
+) {
     var baseCurrency by remember { mutableStateOf("EUR") }
     var targetCurrency by remember { mutableStateOf("GBP") }
     var amountText by remember { mutableStateOf("") }
     var convertedAmount by remember { mutableStateOf("0.0") }
-    var isLoading by remember { mutableStateOf(false) }
-    var isInitialLoading by remember { mutableStateOf(true) }
-    var errorMessage by remember { mutableStateOf("") }  // For error message display
 
-    val apiKey = stringResource(R.string.apiKey) // Store API key securely
-    val conversionResponse by viewModel.conversionRate.observeAsState(initial = null)
-    val message by viewModel.message.observeAsState(initial = null)
-    val currencyList by viewModel.currencyList.observeAsState(initial = emptyMap())
+    val apiKey = stringResource(R.string.apiKey)
+    val conversionResponse by viewModel.conversionRate.collectAsState()
+    val currencyList by viewModel.currencyList.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
-    // Get the keyboard controller to hide the keyboard
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    // Fetch currency list when the screen is first loaded
     LaunchedEffect(true) {
         viewModel.fetchCurrencyList(apiKey)
-        Log.d("CurrencyConverter", "Navigating to Exchange Rates screen")
-
     }
 
-    // Fetch conversion rate when amountText changes
-    LaunchedEffect(amountText) {
-        if (amountText.isNotBlank()) {
-            isLoading = true
-            val amount = amountText.toDoubleOrNull() ?: 0.0
-            viewModel.fetchConversionRateWithAmount(apiKey, baseCurrency, targetCurrency, amount)
-        }
-    }
-
-    // Handle conversion response
     LaunchedEffect(conversionResponse) {
-        isLoading = false
-        isInitialLoading = false
         conversionResponse?.conversionResult?.let { result ->
+            // Set the converted amount
             convertedAmount = result.toString()
+
+//            // Clear the amount input field after a successful conversion
+//            amountText = ""
 
             // Hide the keyboard after conversion
             keyboardController?.hide()
         }
     }
 
-    // Display loading spinner until initial data is fetched
-    if (isInitialLoading) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(50.dp)
-            )
-        }
-    } else {
+
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
+                .background(MaterialTheme.colorScheme.onPrimary)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(32.dp))
 
-            Spacer(
-                modifier = Modifier
-                    .height(32.dp)
-                    .fillMaxWidth()
-            )
-            // Screen title
-//          Text(
-//                text = "Currency Converter",
-//                style = MaterialTheme.typography.headlineLarge.copy(fontSize = 24.sp),
-//                color = MaterialTheme.colorScheme.primary
-//            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Card for inputs and currency dropdowns
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(4.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    // Base currency dropdown
-                    currencyList?.let {
-                        CurrencyDropdown(
-                            label = stringResource(R.string.base_currency),
-                            selectedCurrency = baseCurrency,
-                            onCurrencySelected = { baseCurrency = it },
-                            currencyList = it,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+            when (val currentState = uiState) {
+                is UiState.Loading -> {
+                    // Show a spinner and message while loading
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(modifier = Modifier.size(50.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(stringResource(R.string.fetching_conversion_rates), style = MaterialTheme.typography.bodyMedium)
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Target currency dropdown
-                    currencyList?.let {
-                        CurrencyDropdown(
-                            label = stringResource(R.string.target_currency),
-                            selectedCurrency = targetCurrency,
-                            onCurrencySelected = { targetCurrency = it },
-                            currencyList = it,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Amount input field
-                    CurrencyInputField(
-                        label = "Amount",
-                        value = amountText,
-                        isNumeric = true,
-                        onValueChange = { amountText = it }
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
-            }
+                is UiState.Success -> {
+                    // Currency Selection and Input
+                    Card(
+                        shape = MaterialTheme.shapes.medium,
+                        elevation = CardDefaults.cardElevation(4.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp)
 
-            Spacer(modifier = Modifier.height(24.dp))
+                        ) {
+                            // Base currency dropdown
+                            CurrencyDropdown(
+                                label = stringResource(R.string.base_currency),
+                                selectedCurrency = baseCurrency,
+                                onCurrencySelected = { baseCurrency = it },
+                                currencyList = currencyList ?: emptyMap(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
 
-            // Convert button
-            Button(
-                onClick = {
-                    val amount = amountText.toDoubleOrNull() ?: 0.0
-                    if (amountText.isNotBlank()) {
-                        viewModel.fetchConversionRateWithAmount(apiKey, baseCurrency, targetCurrency, amount)
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Target currency dropdown
+                            CurrencyDropdown(
+                                label = stringResource(R.string.target_currency),
+                                selectedCurrency = targetCurrency,
+                                onCurrencySelected = { targetCurrency = it },
+                                currencyList = currencyList ?: emptyMap(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Amount input field
+                            CurrencyInputField(
+                                label = "Amount",
+                                value = amountText,
+                                isNumeric = true,
+                                onValueChange = { amountText = it }
+                            )
+                        }
                     }
-                },
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Convert button
+                    Button(
+                        onClick = {
+                            val amount = amountText.toDoubleOrNull() ?: 0.0
+                            if (amount > 0) {
+                                viewModel.fetchConversionRateWithAmount(apiKey, baseCurrency, targetCurrency, amount)
+                            }
+                        },
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = currentState !is UiState.Loading
+                    ) {
+                        Text(stringResource(R.string.convertButton))
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Success message
+                    Text(
+                        text = currentState.message ?: stringResource(R.string.conversion_successful),
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(vertical = 8.dp)
                     )
-                } else {
-                    Text(stringResource(R.string.convertButton))
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Conversion Result
+                    ConversionResult(
+                        isLoading = false,
+                        convertedAmount = convertedAmount,
+                        baseCurrency = baseCurrency,
+                        targetCurrency = targetCurrency
+                    )
                 }
+                is UiState.Error -> {
+                    // Show error message
+                    Text(
+                        text = currentState.message,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+//
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Display message (success/error)
-            message?.let {
-                Text(
-                    text = it,
-                    color = if (it.startsWith("Error")) Color.Red else MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Display conversion result
-            ConversionResult(
-                isLoading = isLoading,
-                convertedAmount = convertedAmount,
-                baseCurrency = baseCurrency,
-                targetCurrency = targetCurrency
-            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -227,21 +194,8 @@ fun PairConversionScreen(
                     .fillMaxWidth()
                     .padding(top = 16.dp)
             )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Exchange rates button
-//            Button(
-//                onClick = {
-//                    navController.navigate("exchange_rates_screen")
-//                },
-//                shape = RoundedCornerShape(12.dp),
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                Text(stringResource(R.string.exchangeRatesButton))
-//            }
         }
     }
-}
 
 
 

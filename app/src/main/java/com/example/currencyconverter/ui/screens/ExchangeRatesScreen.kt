@@ -39,7 +39,6 @@ import com.example.currencyconverter.viewmodel.CurrencyConverterViewModel
 import com.example.currencyconverter.viewmodel.UiState
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExchangeRatesScreen(
     viewModel: CurrencyConverterViewModel,
@@ -49,11 +48,9 @@ fun ExchangeRatesScreen(
     var currencyCode by remember { mutableStateOf("") }
     val apiKey = stringResource(R.string.apiKey)
 
-    // Observe UI state
     val uiState by viewModel.uiState.collectAsState()
     val exchangeRatesResponse by viewModel.exchangeRates.collectAsState()
 
-    // Fetch exchange rates when the currency code changes
     LaunchedEffect(currencyCode) {
         if (currencyCode.isNotBlank()) {
             viewModel.fetchExchangeRates(apiKey, currencyCode)
@@ -68,30 +65,28 @@ fun ExchangeRatesScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Currency Code Input
         TextField(
             value = currencyCode,
             onValueChange = { currencyCode = it },
-            label = { Text("Enter Currency Code") },
+            label = { Text(stringResource(R.string.enter_currency_code)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // Display message when currencyCode is blank
         if (currencyCode.isBlank()) {
             Text(
-                text = "Please enter a currency code.",
+                text = stringResource(R.string.please_enter_a_currency_code),
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(8.dp)
             )
         } else {
-            // Loading or Exchange Rates
             when (uiState) {
                 is UiState.Loading -> {
                     CircularProgressIndicator(
@@ -119,7 +114,11 @@ fun ExchangeRatesScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(text = currency, style = MaterialTheme.typography.bodyLarge)
+                                    Text(
+                                        text = currency,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                     Text(
                                         text = String.format("%.2f", rate),
                                         style = MaterialTheme.typography.bodyLarge.copy(
@@ -133,26 +132,14 @@ fun ExchangeRatesScreen(
                     }
                 }
                 is UiState.Error -> {
-                    // Show an error message when there's an invalid currency code
                     Text(
-                        text = "Invalid currency code. Please check and try again.",
+                        text = stringResource(R.string.invalid_currency_code_please_try_again),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(8.dp)
                     )
                 }
             }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Status Message (Success Message)
-        if (uiState is UiState.Success) {
-            Text(
-                text = (uiState as UiState.Success).message.orEmpty(),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(8.dp)
-            )
         }
     }
 }
