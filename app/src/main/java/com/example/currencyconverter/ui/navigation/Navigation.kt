@@ -1,4 +1,4 @@
-package com.example.currencyconverter.ui.components
+package com.example.currencyconverter.ui.navigation
 
 
 import androidx.compose.material.icons.Icons
