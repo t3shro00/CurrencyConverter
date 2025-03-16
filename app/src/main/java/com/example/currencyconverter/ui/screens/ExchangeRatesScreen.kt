@@ -15,8 +15,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -35,9 +35,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.currencyconverter.R
-import com.example.currencyconverter.viewmodel.CurrencyConverterViewModel
-import com.example.currencyconverter.viewmodel.UiState
-
+import com.example.currencyconverter.ui.viewmodel.CurrencyConverterViewModel
+import com.example.currencyconverter.ui.viewmodel.UiState
 
 @Composable
 fun ExchangeRatesScreen(
@@ -72,9 +71,12 @@ fun ExchangeRatesScreen(
             value = currencyCode,
             onValueChange = { currencyCode = it },
             label = { Text(stringResource(R.string.enter_currency_code)) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp), // Add padding to the TextField
             singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
+            shape = RoundedCornerShape(12.dp) // Rounded corners for the TextField
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -102,10 +104,11 @@ fun ExchangeRatesScreen(
                     ) {
                         items(exchangeRatesMap.toList()) { (currency, rate) ->
                             Card(
-                                shape = RoundedCornerShape(8.dp),
+                                shape = RoundedCornerShape(12.dp), // Rounded corners for cards
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
+                                    .padding(vertical = 8.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -143,4 +146,3 @@ fun ExchangeRatesScreen(
         }
     }
 }
-
