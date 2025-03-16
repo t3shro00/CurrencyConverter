@@ -1,4 +1,3 @@
-
 package com.example.currencyconverter
 
 import androidx.compose.foundation.layout.Box
@@ -16,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -24,10 +22,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.currencyconverter.ui.components.BottomNavItem
+import com.example.currencyconverter.ui.navigation.BottomNavItem
 import com.example.currencyconverter.ui.components.BottomNavigationBar
 import com.example.currencyconverter.ui.screens.ExchangeRatesScreen
 import com.example.currencyconverter.ui.screens.PairConversionScreen
+import com.example.currencyconverter.ui.theme.CurrencyConverterTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,54 +41,55 @@ fun CurrencyConverterApp() {
         else -> "Currency Converter"
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.headlineLarge.copy(
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = MaterialTheme.colorScheme.onPrimary
+    CurrencyConverterTheme {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.headlineLarge.copy(
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    modifier = Modifier.shadow(elevation = 8.dp)
+                )
+            },
+            bottomBar = {
+                BottomNavigationBar(navController = navController)
+            },
+            content = { paddingValues ->
+                NavHost(
+                    navController = navController,
+                    startDestination = BottomNavItem.PairConversion.route,
+                    modifier = Modifier.padding(paddingValues)
+                ) {
+                    composable(BottomNavItem.PairConversion.route) {
+                        PairConversionScreen(
+                            viewModel = viewModel(),
+                            navController = navController
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                ),
-                modifier = Modifier.shadow(elevation = 8.dp)
-            )
-        },
-        bottomBar = {
-            BottomNavigationBar(navController = navController)
-        },
-        content = { paddingValues ->
-            NavHost(
-                navController = navController,
-                startDestination = BottomNavItem.PairConversion.route,
-                modifier = Modifier.padding(paddingValues)
-            ) {
-                composable(BottomNavItem.PairConversion.route) {
-                    PairConversionScreen(
-                        viewModel = viewModel(),
-                        navController = navController
-                    )
-                }
-                composable(BottomNavItem.ExchangeRates.route) {
-                    ExchangeRatesScreen(
-                        viewModel = viewModel(),
-                        navController = navController
-                    )
+                    composable(BottomNavItem.ExchangeRates.route) {
+                        ExchangeRatesScreen(
+                            viewModel = viewModel(),
+                            navController = navController
+                        )
+                    }
                 }
             }
-        }
-    )
+        )
+    }
 }
-

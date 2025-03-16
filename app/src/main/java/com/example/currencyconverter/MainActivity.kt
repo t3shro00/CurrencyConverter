@@ -5,13 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavController
-import com.example.currencyconverter.ui.screens.PairConversionScreen
 import com.example.currencyconverter.ui.theme.CurrencyConverterTheme
-import com.example.currencyconverter.viewmodel.CurrencyConverterViewModel
-
+import com.example.currencyconverter.ui.screens.PairConversionScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
