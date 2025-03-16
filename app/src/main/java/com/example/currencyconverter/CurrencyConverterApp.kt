@@ -7,9 +7,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -27,26 +31,34 @@ fun CurrencyConverterApp() {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
-    // Determine the title based on the current route
     val title = when (currentRoute) {
         BottomNavItem.PairConversion.route -> BottomNavItem.PairConversion.label
         BottomNavItem.ExchangeRates.route -> BottomNavItem.ExchangeRates.label
-        else -> "Currency Converter" // Default title
+        else -> "Currency Converter"
     }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.headlineLarge.copy(fontSize = 24.sp),
-                        color = MaterialTheme.colorScheme.primary
+                        style = MaterialTheme.typography.headlineLarge.copy(
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                modifier = Modifier.shadow(elevation = 8.dp)
             )
         },
         bottomBar = {
-            BottomNavigationBar(navController = navController) // Use the BottomNavigationBar composable
+            BottomNavigationBar(navController = navController)
         },
         content = { paddingValues ->
             NavHost(
@@ -70,4 +82,3 @@ fun CurrencyConverterApp() {
         }
     )
 }
-
