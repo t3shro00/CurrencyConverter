@@ -1,6 +1,7 @@
 package com.example.currencyconverter.data.api
 
 import com.example.currencyconverter.data.model.CurrencyListResponse
+import com.example.currencyconverter.data.model.ExchangeRatesResponse
 import com.example.currencyconverter.data.model.PairConversionResponse
 import retrofit2.Response
 import retrofit2.http.GET
@@ -27,4 +28,11 @@ interface ExchangeRatesApi {
     // Get the list of supported currencies
     @GET("v6/{api_key}/codes")
     suspend fun getCurrencyList(@Path("api_key") apiKey: String): Response<CurrencyListResponse>
+
+    @GET("v6/{api_key}/latest/{base_currency}")
+    suspend fun getExchangeRates(
+        @Path("api_key") apiKey: String,
+        @Path("base_currency") baseCurrency: String
+    ): Response<ExchangeRatesResponse>
+
 }

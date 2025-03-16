@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.currencyconverter.data.api.RetrofitInstance
+import com.example.currencyconverter.data.model.ExchangeRatesResponse
 import com.example.currencyconverter.data.model.PairConversionResponse
 import kotlinx.coroutines.launch
 
@@ -16,6 +17,13 @@ class PairConversionViewModel : ViewModel() {
 
     private val _currencyList = MutableLiveData<Map<String, String>?>()
     val currencyList: LiveData<Map<String, String>?> get() = _currencyList
+
+    private val _exchangeRates = MutableLiveData<ExchangeRatesResponse?>()
+    val exchangeRates: LiveData<ExchangeRatesResponse?> get() = _exchangeRates
+
+
+    private val _errorMessage = MutableLiveData<String>()
+    val errorMessage: LiveData<String> get() = _errorMessage
 
     private val _message = MutableLiveData<String?>()
     val message: LiveData<String?> get() = _message
@@ -97,4 +105,24 @@ class PairConversionViewModel : ViewModel() {
             }
         }
     }
+
+    // Inside PairConversionViewModel
+
+
+    fun fetchExchangeRates(apiKey: String, currency: String) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitInstance.api.getExchangeRates(apiKey, currency)
+                if (response.isSuccessful) {
+                    _exchangeRates.postValue(response.body())
+                    _errorMessage.postValue("") // Reset error message if successful
+                } else {
+                    _errorMessage.postValue("Failed to fetch exchange rates: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                _errorMessage.postValue("Error fetching exchange rates: ${e.localizedMessage}")
+            }
+        }
+    }
+
 }

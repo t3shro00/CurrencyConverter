@@ -58,6 +58,8 @@ dependencies {
     // ViewModel
     implementation (libs.androidx.lifecycle.viewmodel.compose)
 
+    implementation (libs.material3)
+
     // Retrofit (for API calls)
     implementation (libs.retrofit)
     implementation (libs.converter.gson)

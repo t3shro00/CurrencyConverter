@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,16 +34,14 @@ fun CurrencyDropdown(
     label: String,
     selectedCurrency: String,
     onCurrencySelected: (String) -> Unit,
-    currencyList: Map<String, String>
+    currencyList: Map<String, String>,
+    modifier: Modifier
 ) {
-    // State to manage dropdown expanded state and text field value
     val expanded = remember { mutableStateOf(false) }
     val textState = remember { mutableStateOf(TextFieldValue(selectedCurrency)) }
-
-    // State for search query
     val searchQuery = remember { mutableStateOf("") }
 
-    // Filtered currency list based on search query
+    // Filtered list based on search query
     val filteredCurrencyList = currencyList.filter {
         it.value.contains(searchQuery.value, ignoreCase = true) ||
                 it.key.contains(searchQuery.value, ignoreCase = true)
@@ -58,17 +57,13 @@ fun CurrencyDropdown(
         label = { Text(label) },
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { expanded.value = true }, // Toggling dropdown on click
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-        ),
-        readOnly = true // The dropdown will handle input, not the user typing
+            .clickable { expanded.value = true }, // Toggle dropdown
+
+        readOnly = true
     )
 
-    // Show the dropdown menu only when there are items in filteredCurrencyList
+    // Display dropdown menu if expanded and list is not empty
     if (expanded.value && filteredCurrencyList.isNotEmpty()) {
-        // Adding a fade-in/out effect with animations
         AnimatedVisibility(
             visible = expanded.value,
             enter = fadeIn(),
@@ -78,7 +73,7 @@ fun CurrencyDropdown(
                 expanded = expanded.value,
                 onDismissRequest = { expanded.value = false }
             ) {
-                // Search TextField
+                // Search TextField inside dropdown
                 TextField(
                     value = searchQuery.value,
                     onValueChange = { searchQuery.value = it },
@@ -86,13 +81,10 @@ fun CurrencyDropdown(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    )
+
                 )
 
-                // Scrollable list of currencies
+                // Scrollable list of filtered currencies
                 LazyColumn {
                     items(filteredCurrencyList.toList()) { (currencyCode, currencyName) ->
                         Text(
@@ -100,10 +92,9 @@ fun CurrencyDropdown(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    // When an item is clicked, update the selected currency and close the dropdown
                                     onCurrencySelected(currencyCode)
-                                    textState.value = TextFieldValue(currencyCode) // Update the selected currency
-                                    expanded.value = false // Close the dropdown
+                                    textState.value = TextFieldValue(currencyCode) // Update selected currency
+                                    expanded.value = false // Close dropdown
                                 }
                                 .padding(8.dp)
                         )
@@ -113,4 +104,3 @@ fun CurrencyDropdown(
         }
     }
 }
-

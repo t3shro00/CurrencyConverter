@@ -1,6 +1,7 @@
 package com.example.currencyconverter.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,9 +20,8 @@ fun ExposedDropdownMenu(
     onDismissRequest: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    // Dropdown will only be visible if expanded is true and there are items to show
+    // Show dropdown when expanded is true
     if (expanded) {
-        // A simple dropdown menu with a column layout
         Card(
             shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -30,13 +30,11 @@ fun ExposedDropdownMenu(
                 .fillMaxWidth()
                 .padding(top = 4.dp)
                 .background(Color.White)
+                .clickable { onDismissRequest() } // Allow dismiss on outer click
         ) {
             Column(modifier = Modifier.padding(8.dp)) {
                 content()
             }
         }
-    } else {
-        // If not expanded, dismiss the dropdown
-        onDismissRequest()
     }
 }

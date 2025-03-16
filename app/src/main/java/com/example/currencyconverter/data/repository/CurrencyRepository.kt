@@ -55,7 +55,7 @@ class CurrencyRepository(
     }
 
     // Helper function to check API responses
-    private inline fun <T> checkResponse(response: Response<T>): Result<T> {
+    private  fun <T> checkResponse(response: Response<T>): Result<T> {
         return if (response.isSuccessful) {
             response.body()?.let { Result.success(it) } ?: Result.failure(Exception("Empty response body"))
         } else {

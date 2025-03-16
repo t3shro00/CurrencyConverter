@@ -22,16 +22,16 @@ fun CurrencyInputField(
     OutlinedTextField(
         value = value,
         onValueChange = { newValue ->
+            // Numeric validation with optional decimal point
             if (isNumeric && newValue.isNotEmpty() && !newValue.matches(Regex("^\\d*\\.?\\d*$"))) return@OutlinedTextField
             onValueChange(newValue)
         },
         label = { Text(label) },
         modifier = Modifier.fillMaxWidth(),
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = if (isNumeric) KeyboardType.Number else KeyboardType.Text
+        ),
         shape = RoundedCornerShape(12.dp),
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-        )
+
     )
 }

@@ -15,3 +15,9 @@ data class CurrencyListResponse(
     val result: String,
     val supported_codes: List<List<String>> // List of pairs (currency code, currency name)
 )
+
+data class ExchangeRatesResponse(
+    val result: String,
+    @SerializedName("base_code") val baseCode: String,
+    @SerializedName("conversion_rates") val rates: Map<String, Double>
+)

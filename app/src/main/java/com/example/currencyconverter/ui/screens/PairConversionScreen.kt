@@ -2,34 +2,49 @@ package com.example.currencyconverter.ui.screens
 
 import ConversionResult
 import CurrencyInputField
+import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.currencyconverter.R
 import com.example.currencyconverter.ui.components.CurrencyDropdown
 import com.example.currencyconverter.viewmodel.PairConversionViewModel
 
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.stringResource
-import com.example.currencyconverter.R
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PairConversionScreen(
     viewModel: PairConversionViewModel,
-    modifier: Modifier = Modifier
-) {
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    ) {
     // Local state variables
     var baseCurrency by remember { mutableStateOf("EUR") }
     var targetCurrency by remember { mutableStateOf("GBP") }
@@ -50,6 +65,8 @@ fun PairConversionScreen(
     // Fetch currency list when the screen is first loaded
     LaunchedEffect(true) {
         viewModel.fetchCurrencyList(apiKey)
+        Log.d("CurrencyConverter", "Navigating to Exchange Rates screen")
+
     }
 
     // Fetch conversion rate when amountText changes
@@ -99,11 +116,11 @@ fun PairConversionScreen(
                     .fillMaxWidth()
             )
             // Screen title
-            Text(
-                text = "Currency Converter",
-                style = MaterialTheme.typography.headlineLarge.copy(fontSize = 24.sp),
-                color = MaterialTheme.colorScheme.primary
-            )
+//          Text(
+//                text = "Currency Converter",
+//                style = MaterialTheme.typography.headlineLarge.copy(fontSize = 24.sp),
+//                color = MaterialTheme.colorScheme.primary
+//            )
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -121,7 +138,8 @@ fun PairConversionScreen(
                             label = stringResource(R.string.base_currency),
                             selectedCurrency = baseCurrency,
                             onCurrencySelected = { baseCurrency = it },
-                            currencyList = it
+                            currencyList = it,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
 
@@ -133,7 +151,8 @@ fun PairConversionScreen(
                             label = stringResource(R.string.target_currency),
                             selectedCurrency = targetCurrency,
                             onCurrencySelected = { targetCurrency = it },
-                            currencyList = it
+                            currencyList = it,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
 
@@ -208,6 +227,18 @@ fun PairConversionScreen(
                     .fillMaxWidth()
                     .padding(top = 16.dp)
             )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Exchange rates button
+//            Button(
+//                onClick = {
+//                    navController.navigate("exchange_rates_screen")
+//                },
+//                shape = RoundedCornerShape(12.dp),
+//                modifier = Modifier.fillMaxWidth()
+//            ) {
+//                Text(stringResource(R.string.exchangeRatesButton))
+//            }
         }
     }
 }
