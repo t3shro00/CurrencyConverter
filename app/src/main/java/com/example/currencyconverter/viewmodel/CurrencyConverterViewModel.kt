@@ -1,128 +1,116 @@
 package com.example.currencyconverter.viewmodel
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.currencyconverter.data.api.RetrofitInstance
 import com.example.currencyconverter.data.model.ExchangeRatesResponse
 import com.example.currencyconverter.data.model.PairConversionResponse
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class PairConversionViewModel : ViewModel() {
+// Sealed class for UI states
+sealed class UiState {
+    object Loading : UiState()
+    data class Success(val message: String? = null) : UiState()
+    data class Error(val message: String) : UiState()
+}
 
-    private val _conversionRate = MutableLiveData<PairConversionResponse?>(null)
-    val conversionRate: LiveData<PairConversionResponse?> get() = _conversionRate
+class CurrencyConverterViewModel : ViewModel() {
 
-    private val _currencyList = MutableLiveData<Map<String, String>?>()
-    val currencyList: LiveData<Map<String, String>?> get() = _currencyList
+    private val _conversionRate = MutableStateFlow<PairConversionResponse?>(null)
+    val conversionRate: StateFlow<PairConversionResponse?> get() = _conversionRate
 
-    private val _exchangeRates = MutableLiveData<ExchangeRatesResponse?>()
-    val exchangeRates: LiveData<ExchangeRatesResponse?> get() = _exchangeRates
+    private val _currencyList = MutableStateFlow<Map<String, String>?>(null)
+    val currencyList: StateFlow<Map<String, String>?> get() = _currencyList
 
+    private val _exchangeRates = MutableStateFlow<ExchangeRatesResponse?>(null)
+    val exchangeRates: StateFlow<ExchangeRatesResponse?> get() = _exchangeRates
 
-    private val _errorMessage = MutableLiveData<String>()
-    val errorMessage: LiveData<String> get() = _errorMessage
+    private val _uiState = MutableStateFlow<UiState>(UiState.Success())
+    val uiState: StateFlow<UiState> get() = _uiState
 
-    private val _message = MutableLiveData<String?>()
-    val message: LiveData<String?> get() = _message
-
-
-
-    // Fetch conversion rate with an amount
-    fun fetchConversionRateWithAmount(
-        apiKey: String,
-        baseCurrency: String,
-        targetCurrency: String,
-        amount: Double
-    ) {
+    /**
+     * Fetch conversion rate for a given amount
+     */
+    fun fetchConversionRateWithAmount(apiKey: String, baseCurrency: String, targetCurrency: String, amount: Double) {
         viewModelScope.launch {
-            _message.postValue("Loading...") // Placed inside the coroutine
-
+            _uiState.value = UiState.Loading
             try {
-                val response = RetrofitInstance.api.getConversionRateWithAmount(
-                    apiKey,
-                    baseCurrency,
-                    targetCurrency,
-                    amount
-                )
-
+                val response = RetrofitInstance.api.getConversionRateWithAmount(apiKey, baseCurrency, targetCurrency, amount)
                 if (response.isSuccessful) {
-                    val responseBody = response.body()
-                    if (responseBody != null) {
-                        _conversionRate.postValue(responseBody)
-                        _message.postValue("Conversion Result: ${responseBody.conversionResult ?: "N/A"}")
-                    } else {
-                        _message.postValue("Error: Empty response body")
+                    response.body()?.let {
+                        _conversionRate.value = it
+                        _uiState.value = UiState.Success("Conversion Result: ${it.conversionResult ?: "N/A"}")
+                    } ?: run {
+                        _uiState.value = UiState.Error("Error: Empty response body")
                     }
                 } else {
-                    val errorMessage = response.errorBody()?.string() ?: "Unknown error"
-                    _message.postValue("Failed to fetch conversion rate. Code: ${response.code()}, Message: $errorMessage")
-                    Log.e("ConversionError", "Failed with response: $errorMessage")
+                    handleApiError(response.code(), response.errorBody()?.string())
                 }
             } catch (e: Exception) {
-                _message.postValue("Error: ${e.localizedMessage}")
-                Log.e("ConversionError", "Error fetching conversion rate: ${e.message}")
+                handleException(e)
             }
         }
     }
 
-
-
-
-    // Fetch currency list
+    /**
+     * Fetch available currency list
+     */
     fun fetchCurrencyList(apiKey: String) {
         viewModelScope.launch {
-            _message.postValue("Loading...") // Placed inside the coroutine
-
+            _uiState.value = UiState.Loading
             try {
                 val response = RetrofitInstance.api.getCurrencyList(apiKey)
-                Log.d("CurrencyListDebug", "Response: $response")
-
                 if (response.isSuccessful) {
-                    val currencyList = response.body()?.supported_codes ?: emptyList()
-                    Log.d("CurrencyListDebug", "Currency List: $currencyList")
-
-                    val currencyMap = mutableMapOf<String, String>()
-                    currencyList.forEach { currency ->
-                        val code = currency[0]
-                        val name = currency[1]
-                        currencyMap[code] = name
-                    }
-
-                    _currencyList.postValue(currencyMap)
-                    _message.postValue("Currency List Loaded")
+                    val currencyMap = response.body()?.supported_codes?.associate { it[0] to it[1] } ?: emptyMap()
+                    _currencyList.value = currencyMap
+                    _uiState.value = UiState.Success("Currency List Loaded")
                 } else {
-                    val errorMessage = response.errorBody()?.string() ?: "Unknown error"
-                    _message.postValue("Failed to load currency list. Code: ${response.code()}, Message: $errorMessage")
-                    Log.e("CurrencyListError", "Failed with response: $errorMessage")
+                    handleApiError(response.code(), response.errorBody()?.string())
                 }
-
             } catch (e: Exception) {
-                _message.postValue("Error: ${e.localizedMessage}")
-                Log.e("CurrencyListError", "Error loading currency list: ${e.message}")
+                handleException(e)
             }
         }
     }
 
-    // Inside PairConversionViewModel
-
-
+    /**
+     * Fetch exchange rates for a specific currency
+     */
     fun fetchExchangeRates(apiKey: String, currency: String) {
         viewModelScope.launch {
+            _uiState.value = UiState.Loading
             try {
                 val response = RetrofitInstance.api.getExchangeRates(apiKey, currency)
                 if (response.isSuccessful) {
-                    _exchangeRates.postValue(response.body())
-                    _errorMessage.postValue("") // Reset error message if successful
-                } else {
-                    _errorMessage.postValue("Failed to fetch exchange rates: ${response.code()}")
+                    _exchangeRates.value = response.body()
+                    _uiState.value = UiState.Success("Exchange rates fetched successfully")
+                }
+                else {
+                    handleApiError(response.code(), response.errorBody()?.string())
                 }
             } catch (e: Exception) {
-                _errorMessage.postValue("Error fetching exchange rates: ${e.localizedMessage}")
+                handleException(e)
             }
         }
     }
 
+    /**
+     * Helper method to handle API errors
+     */
+    private fun handleApiError(code: Int, errorBody: String?) {
+        val errorMessage = "Error: Code $code, Message: ${errorBody ?: "Unknown error"}"
+        _uiState.value = UiState.Error(errorMessage)
+        Log.e("APIError", errorMessage)
+    }
+
+    /**
+     * Helper method to handle exceptions
+     */
+    private fun handleException(e: Exception) {
+        _uiState.value = UiState.Error("Error: ${e.localizedMessage}")
+        Log.e("ExceptionError", "Error: ${e.message}", e)
+    }
 }
