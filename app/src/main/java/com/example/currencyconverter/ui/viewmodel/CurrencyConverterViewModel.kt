@@ -1,4 +1,4 @@
-package com.example.currencyconverter.viewmodel
+package com.example.currencyconverter.ui.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -42,7 +42,8 @@ class CurrencyConverterViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     response.body()?.let {
                         _conversionRate.value = it
-                        _uiState.value = UiState.Success("Conversion Result: ${it.conversionResult ?: "N/A"}")
+                        _uiState.value =
+                            UiState.Success("Conversion Result: ${it.conversionResult ?: "N/A"}")
                     } ?: run {
                         _uiState.value = UiState.Error("Error: Empty response body")
                     }
