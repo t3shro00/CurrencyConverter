@@ -6,4 +6,13 @@
     <string name="base_currency">Base Currency</string>
     <string name="target_currency">Target Currency</string>
     <string name="exchangeRatesButton">Exchange  Rates</string>
+    <string name="fetching_conversion_rates">Fetching conversion rates...</string>
+    <string name="conversion_successful">Conversion Successful</string>
+    <string name="converted_amount">Converted Amount</string>
+    <string name="conversion">%1$s → %2$s</string>
+    <string name="converted_amount_target_currency">%1$s %2$s</string>
+    <string name="search">Search</string>
+    <string name="invalid_currency_code_please_try_again">Invalid currency code. Please try again.</string>
+    <string name="please_enter_a_currency_code">Please enter a currency code.</string>
+    <string name="enter_currency_code">Enter Currency Code</string>
 </resources>
